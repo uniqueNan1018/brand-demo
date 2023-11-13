@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ブランドの追加</title>
+    <link rel="stylesheet" href="./css/common.css">
+</head>
+<body>
+<div id="app">
+    <h1>ブランドの追加</h1>
+    <form>
+        <div class="item-sec">
+            <label for="brandName">ブランドネーム</label>
+            <input type="text" name="brandName" id="brandName" v-model="brand.brandName" />
+        </div>
+        <div class="item-sec">
+            <label for="companyName">企業</label>
+            <input type="text" name="companyName" id="companyName" v-model="brand.companyName" />
+        </div>
+        <div class="item-sec">
+            <label for="ordered">順位</label>
+            <input type="text" name="ordered" id="ordered" v-model="brand.ordered" />
+        </div>
+        <div class="item-sec">
+            <label for="description">詳細</label>
+            <textarea name="description" cols="30" rows="8" id="description" v-model="brand.description"></textarea>
+        </div>
+        <div class="item-sec">
+            <label>状態</label>
+            <label for="available">有効</label>
+            <input type="radio" name="status" value="1" id="available" v-model="brand.status"/>
+            <label for="unavailable">無効</label>
+            <input type="radio" name="status" id="unavailable" value="0" v-model="brand.status"/>
+        </div>
+        <div class="btn-group">
+            <input type="button" value="送信" v-on:click="onSubmit">
+            <input type="reset" value="リセット">
+        </div>
+    </form>
+</div>
+</body>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                brand: {},
+            }
+        },
+        methods: {
+            onSubmit() {
+                let _this = this;
+                console.log('_this.brand', _this.brand);
+                axios({
+                    method: "POST",
+                    url: "http://localhost:8080/brand-demo/addOneServlet",
+                    data: JSON.stringify(_this.brand)
+                })
+                    .then((res = {}) => {
+                        const { data } = res;
+                        if (data == 'success') {
+                            window.location.href = "/brand-demo/brand.html";
+                        }
+                    })
+            }
+        }
+    })
+
+    // const addBrand = () => {
+    //     const brandName = document.getElementById("brandName").value;
+    //     const companyName = document.getElementById("companyName").value;
+    //     const ordered = document.getElementById("ordered").value;
+    //     const description = document.getElementById("description").value;
+    //     const status =
+    //         document.getElementById("available").checked == true ? "1" : "0";
+    //
+    //     const brandObj = {
+    //         brandName,
+    //         companyName,
+    //         ordered,
+    //         description,
+    //         status
+    //     };
+    //     const brand = JSON.stringify(brandObj);
+    //     console.log(brand);
+    //     axios({
+    //         method: "POST",
+    //         url: "http://localhost:8080/brand-demo/addOneServlet",
+    //         data: brand
+    //     })
+    //         .then((res) => {
+    //             const { data } = res;
+    //             if (data == 'success') {
+    //                 window.location.href = "/brand-demo/brand.html";
+    //             }
+    //         })
+    // }
+</script>
+</html>

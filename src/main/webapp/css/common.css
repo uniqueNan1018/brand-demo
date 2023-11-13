@@ -1,0 +1,83 @@
+.sec-block,.btn-group {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+/*label {*/
+/*    display: inline-block;*/
+/*    width: 120px;*/
+/*}*/
+
+table {
+    border-spacing:0 !important;
+}
+table th, table td{
+    padding: 3px;
+}
+
+.item-sec {
+    padding-bottom: 10px;
+}
+
+.error-msg {
+    color: red;
+}
+
+.check-img-container{
+    display: flex;
+    align-items: center;
+}
+.check-img-container img {
+    width: 100px;
+    height: 50px;
+    padding-right: 10px;
+}
+.check-img-container label {
+    padding-right: 10px;
+}
+
+.check-img-container input {
+    margin-right: 10px;
+}
+
+.hidden {
+    display: none;
+}
+.el-row {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.label {
+    color: #333;
+    min-width: 58px;
+    white-space:nowrap;
+    padding-right: 10px;
+}
+.input-col {
+    display: flex;
+    align-items: center;
+    padding-right: 15px;
+}
+
+.el-input {
+    flex:1;
+    /*padding-right: 15px;*/
+}
+.add-item-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.add-item-label {
+    width: 100px;
+    text-align: right;
+    padding-right: 10px;
+}
+.add-item-input {
+    flex: 1;
+}

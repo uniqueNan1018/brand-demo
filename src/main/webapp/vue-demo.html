@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+    <div id="app">
+        <input v-model="username" />
+        {{username}}
+
+        <a v-bind:href="url">クリックして</a>
+        <input type="button" v-on:click="onSubmit" value="送信" />
+
+        <div v-if="count == 1">1</div>
+        <div v-else-if="count == 2">2</div>
+        <div v-else="count == 3">3</div>
+        <input v-model="count" />
+        <div v-show="count == 1">showDiv</div>
+        <div>
+            <span v-for="(addr,i) in addrs">
+                <span>{{i+1}}<span>{{addr}}
+            </span>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<script>
+
+    // const { createApp } = Vue;
+
+    new Vue({
+        el: "#app",
+        mounted: () => {
+            console.log("データ　リクエスト！")
+        },
+        data() {
+            return {
+                username: "",
+                url: "https://www.google.com",
+                count: 0,
+                addrs: ["東京","大阪","奈良"],
+            }
+        },
+        methods: {
+            onSubmit: () => {
+                alert("onSubmit");
+            }
+        }
+    })
+</script>
+</body>
+</html>

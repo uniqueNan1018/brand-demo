@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>新規ユーザー登録</title>
+    <link rel="stylesheet" href="./css/common.css">
+</head>
+<body>
+    <h1>新規ユーザー登録</h1>
+    <form action="/brand-demo/userRegisterServlet" method="post">
+        <div>
+            <label for="username">ユーザーネーム</label>
+            <input type="text" name="username" id="username" />
+            <span class="error-msg hidden" id="usernameMsg">ユーザーネーム既に存在しています！</span>
+        </div>
+        <div>
+            <label for="password">パスワード</label>
+            <input type="password" name="password" id="password">
+        </div>
+        <div>
+            <label>性別</label>
+            <label for="male">男</label>
+            <input type="radio" name="gender" value="男" id="male"/>
+            <label for="female">女</label>
+            <input type="radio" name="gender" id="female" value="女"/>
+        </div>
+        <div>
+            <label for="addr">住所</label>
+            <textarea id="addr" name="addr" rows="3" cols="20"></textarea>
+        </div>
+        <div class="check-img-container">
+            <label>認証コード</label>
+            <input type="text" name="checkCode" id="checkCode" />
+            <img id="checkCodeImage" src="/brand-demo/checkCodeServlet">
+            <a id="changeImg" href="#">良く見えません</a>
+        </div>
+        <div class="btn-group">
+            <input type="submit" value="登録">
+            <input type="reset" value="リセット">
+        </div>
+    </form>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        document.getElementById("changeImg").onclick = () => {
+            let milliseconds = new Date().getMilliseconds();
+            document.getElementById("checkCodeImage").src = "/brand-demo/checkCodeServlet?" + milliseconds;
+        }
+
+        document.getElementById("username").onblur = function () {
+            // let xmlHttpRequest = new XMLHttpRequest();
+            //
+            // xmlHttpRequest.open("GET", "http://localhost:8080/brand-demo/usernameCheckServlet?username=" + this.value , true);
+            // xmlHttpRequest.send();
+            //
+            // xmlHttpRequest.onreadystatechange = function (){
+            //     if (this.readyState == 4 && this.status == 200) {
+            //         const errMsg = document.getElementById("usernameMsg");
+            //         if (this.responseText == "usernameError") {
+            //             errMsg.style.display = "inline-block";
+            //         } else {
+            //             errMsg.style.display = "none";
+            //         }
+            //     }
+            // }
+            axios({
+                method: "GET",
+                url: "http://localhost:8080/brand-demo/usernameCheckServlet?username=" + this.value,
+            })
+                .then((res) => {
+                    const { data = "" } = res;
+                    const errMsg = document.getElementById("usernameMsg");
+                    if (data == "usernameError") {
+                        errMsg.style.display = "inline-block";
+                    } else {
+                        errMsg.style.display = "none";
+                    }
+                })
+        }
+
+
+    </script>
+</body>
+</html>

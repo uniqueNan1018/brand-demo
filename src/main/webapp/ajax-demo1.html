@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    hdqowdh
+    <div id="respText">
+
+    </div>
+<script>
+    let xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.open("GET", "http://localhost:8080/brand-demo/ajaxServlet", true);
+    xmlHttpRequest.send();
+
+    xmlHttpRequest.onreadystatechange = function (){
+        console.log(this.readyState);
+        console.log(this.status);
+        if (this.readyState == 4 && this.status == 200) {
+            console.log('this.responseText;', this.responseText)
+            // debugger
+            document.getElementById("respText").innerText = this.responseText;
+        }
+    }
+</script>
+</body>
+</html>

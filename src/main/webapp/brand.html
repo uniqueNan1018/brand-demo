@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ブランド管理</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<div id="app">
+    <el-row>
+        <el-col :span="5" class="el-col-form-item">
+            <span class="label">今の状態</span>
+            <el-select v-model="selectBarValues.status" placeholder="選びます">
+                <el-option
+                        v-for="item in status"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                </el-option>
+            </el-select>
+        </el-col>
+        <el-col :span="5" class="input-col">
+            <span class="label">企業名</span>
+            <el-input v-model="selectBarValues.companyName" placeholder="入力してください"></el-input>
+        </el-col>
+        <el-col :span="5" class="input-col">
+            <span class="label">ブランド名</span>
+            <el-input v-model="selectBarValues.brandName" placeholder="入力してください"></el-input>
+        </el-col>
+        <el-col :span="5" class="input-col">
+            <el-button type="primary" @click="loadData">検索</el-button>
+        </el-col>
+    </el-row>
+    <el-row>
+        <el-button type="primary" @click="openAddDialog">追加</el-button>
+        <el-button
+                type="danger"
+                :disabled="multipleSelection.length==0"
+                @click="batchDelete">
+            バッチ削除
+        </el-button>
+    </el-row>
+    <el-table :data="brands" style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column
+                type="selection"
+                width="55">
+        </el-table-column>
+        <el-table-column
+                type="index"
+                label="番号">
+        </el-table-column>
+        <el-table-column
+                property="brandName"
+                label="ブランド名">
+        </el-table-column>
+        <el-table-column
+                property="companyName"
+                label="企業">
+        </el-table-column>
+        <el-table-column
+                property="ordered"
+                label="順位">
+        </el-table-column>
+        <el-table-column
+                property="description"
+                label="詳細">
+        </el-table-column>
+        <el-table-column
+                property="status"
+                label="状態">
+            <template slot-scope="scope">
+                <span v-if="scope.row.status == 0">
+                    無効
+                </span>
+                <span v-if="scope.row.status == 1">
+                    有効
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                label="操作">
+            <template slot-scope="scope">
+                <el-button type="primary" plain @click="modifyHandler(scope.row)">修正</el-button>
+                <el-button type="danger" plain @click="deleteHandler(scope.row.id)">削除</el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+    <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="selectBarValues.currentPage"
+            :page-sizes="[5, 10]"
+            :page-size="selectBarValues.pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="totalCount">
+    </el-pagination>
+    <el-dialog
+            :title="dialogType == 1 ? 'ブランド追加' : 'ブランド詳細の変更'"
+            :visible.sync="showAddDialog"
+            width="30%"
+            :before-close="handleClose"
+    >
+        <section class="brand-add-container">
+            <div class="add-item-container">
+                <div class="add-item-label">ブランド名</div>
+                <el-input class="add-item-input" v-model="addBrand.brandName" placeholder="入力してください"></el-input>
+            </div>
+            <div class="add-item-container">
+                <div class="add-item-label">企業名</div>
+                <el-input class="add-item-input" v-model="addBrand.companyName" placeholder="入力してください"></el-input>
+            </div>
+            <div class="add-item-container">
+                <div class="add-item-label">順位</div>
+                <el-input class="add-item-input" v-model="addBrand.ordered" placeholder="入力してください"></el-input>
+            </div>
+            <div class="add-item-container">
+                <div class="add-item-label">詳細</div>
+                <el-input type="textarea" :rows="3" class="add-item-input" v-model="addBrand.description" placeholder="入力してください"></el-input>
+            </div>
+            <div class="add-item-container">
+                <div class="add-item-label">有効にしますか</div>
+                <el-switch
+                        v-model="addBrand.status"
+                        active-color="#409eff"
+                        inactive-color="#dddddd"
+                        active-value="1"
+                        inactive-value="0"
+                >
+                </el-switch>
+            </div>
+        </section>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="addBrandCancel">キャンセル</el-button>
+            <el-button type="primary" @click="dialogConfirm">送信</el-button>
+      </span>
+    </el-dialog>
+<!--    <table border="1">-->
+<!--        <thead>-->
+<!--        <tr>-->
+<!--            <th>番号</th>-->
+<!--            <th>ブランドネーム</th>-->
+<!--            <th>企業</th>-->
+<!--            <th>順位</th>-->
+<!--            <th>詳細</th>-->
+<!--            <th>状態</th>-->
+<!--            <th>操作</th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--        <tbody id="brandTable">-->
+<!--            <tr v-for="(brandItem,i) in brands">-->
+<!--                <td>{{i+1}}</td>-->
+<!--                <td>{{brandItem.brandName}}</td>-->
+<!--                <td>{{brandItem.companyName}}</td>-->
+<!--                <td>{{brandItem.ordered}}</td>-->
+<!--                <td>{{brandItem.description}}</td>-->
+<!--                <td v-if="brandItem.status == 0">-->
+<!--                    無効-->
+<!--                </td>-->
+<!--                <td v-if="brandItem.status == 1">-->
+<!--                    有効-->
+<!--                </td>-->
+<!--                <td>-->
+<!--                    <a href="#" v-on:click="modifyHandler(brandItem.id)">修正</a>-->
+<!--                    <a href="#" v-on:click="deleteHandler(brandItem.id)">削除</a>-->
+<!--                </td>-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--    </table>-->
+</div>
+</body>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/element-ui/lib/umd/locale/ja.js"></script>
+<script>
+    ELEMENT.locale(ELEMENT.lang.ja);
+    let vm;
+    vm = new Vue({
+        el: "#app",
+        data() {
+            return {
+                brands: [],
+                status: [{
+                    value: '1',
+                    label: '有効'
+                }, {
+                    value: '0',
+                    label: '無効'
+                }],
+                multipleSelection: [],
+                selectBarValues: {
+                    status: undefined,
+                    companyName: "",
+                    brandName: "",
+                    currentPage: 1,
+                    pageSize: 5
+                },
+                showAddDialog: false,
+                addBrand: {
+                    status: "0"
+                },
+                dialogType: 1, // 1 新規　２変更
+                totalCount: 0,
+            }
+        },
+        mounted() {
+            this.loadData();
+        },
+        methods: {
+            async loadData() {
+                let _this = this;
+                axios({
+                    method: "POST",
+                    url: "http://localhost:8080/brand-demo/brand/search",
+                    data: JSON.stringify(this.selectBarValues)
+                })
+                    .then((res = {}) => {
+                        const { data: {totalCount, brands = []} = {} } = res;
+                        _this.brands = brands;
+                        _this.totalCount = totalCount;
+                    })
+            },
+            modifyHandler(brand = {}){
+                this.addBrand = {...brand};
+                this.addBrand.status = ""+this.addBrand.status;
+                this.dialogType = 2;
+                this.showAddDialog = true;
+            },
+            deleteHandler(id) {
+                let _this = this;
+                axios.get("http://localhost:8080/brand-demo/deleteBrandServlet?id=" + id)
+                    .then((res = {}) => {
+                        const {data} = res;
+                        if (data == "success") {
+                            _this.loadData();
+                        }
+                    })
+            },
+            add() {
+                // window.location = "/brand-demo/addBrand.jsp"
+            },
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+            },
+            openAddDialog() {
+                this.dialogTitle = "ブランド追加";
+                this.showAddDialog = true;
+            },
+            searchByCondition() {
+                let _this = this;
+                axios({
+                    method: "POST",
+                    url: "http://localhost:8080/brand-demo/selectByConditionsServlet",
+                    data: JSON.stringify(this.selectBarValues)
+                })
+                    .then((res = {}) => {
+                        const {data: brands = []} = res;
+                        _this.brands = brands;
+                    })
+            },
+            addBrandCancel() {
+                this.showAddDialog = false;
+                setTimeout(()=> {
+                    this.addBrand = {
+                        status: "0"
+                    };
+                }, 10);
+            },
+            dialogConfirm() {
+                this.dialogType == 1 ?
+                    this.addConfirm() :
+                    this.updateConfirm();
+            },
+            addConfirm() {
+                let _this = this;
+                axios({
+                    method: "POST",
+                    url: "http://localhost:8080/brand-demo/brand/add",
+                    data: JSON.stringify(_this.addBrand)
+                })
+                    .then((res = {}) => {
+                        const { data } = res;
+                        if (data == 'success') {
+                            this.showAddDialog = false;
+                            const message = '新規ブランドが追加しました！';
+                            this.$message({
+                                message,
+                                type: 'success'
+                            });
+                            setTimeout(()=> {
+                                this.addBrand = {
+                                    status: "0"
+                                };
+                            }, 10);
+
+                            _this.loadData();
+                        }
+                    })
+            },
+            updateConfirm() {
+                let _this = this;
+                axios({
+                    method: "POST",
+                    url: "http://localhost:8080/brand-demo/brand/update",
+                    data: JSON.stringify(_this.addBrand)
+                })
+                    .then((res = {}) => {
+                        const { data } = res;
+                        if (data == 'success') {
+                            this.showAddDialog = false;
+                            const message = "ブランドが更新しました";
+                            this.$message({
+                                message,
+                                type: 'success'
+                            });
+                            setTimeout(()=> {
+                                this.addBrand = {
+                                    status: "0"
+                                };
+                            }, 10);
+
+                            _this.loadData();
+                        }
+                    })
+            },
+            handleClose(done) {
+                const confirmText = this.dialogType == 1 ?
+                    "本当にブランドの追加をキャンセルしますか？" :
+                    "本当にブランド変更しないですか？"
+                const confirmButtonText = this.dialogType == 1 ?
+                    "追加に進め" : "変更に進め";
+                this.$confirm(confirmText, "追加のキャンセル", {
+                    distinguishCancelAndClose: true,
+                    confirmButtonText,
+                    cancelButtonText: 'キャンセル'
+                })
+                    .then(() => {
+                        this.showAddDialog = true;
+                    })
+                    .catch(action => {
+                        if (action == "action") {
+                            this.showAddDialog = false;
+                        }
+                    });
+            },
+            batchDelete() {
+                console.log("multipleSelection", this.multipleSelection)
+                // const ids = this.multipleSelection.map((brand = {}) => brand.id);
+                let ids = "";
+                this.multipleSelection.forEach((brand = {}, index) => {
+                    if (index !== this.multipleSelection.length - 1) {
+                        ids = ids + brand.id + ",";
+                    } else {
+                        ids = ids + brand.id;
+                    }
+                })
+                const date = {
+                    ids
+                };
+                let _this = this;
+                axios({
+                    method: "POST",
+                    url: "http://localhost:8080/brand-demo/brand/delByIds",
+                    data: JSON.stringify(date),
+                })
+                    .then((res = {}) => {
+                        const { data } = res;
+                        if (data == 'success') {
+                            this.$message({
+                                message: "選んだブランドは削除されました",
+                                type: 'success'
+                            });
+                            _this.loadData();
+                        }
+                    })
+            },
+            handleCurrentChange(currentPage) {
+                const _this = this;
+                const selectBarValues = {..._this.selectBarValues};
+                selectBarValues.currentPage = currentPage;
+                _this.selectBarValues = selectBarValues;
+                _this.loadData();
+            },
+            handleSizeChange(pageSize) {
+                console.log('pageSize', pageSize)
+                const _this = this;
+                const selectBarValues = {..._this.selectBarValues};
+                selectBarValues.currentPage = 1;
+                selectBarValues.pageSize = pageSize;
+                _this.selectBarValues = selectBarValues;
+                _this.loadData();
+            }
+        },
+    });
+    // const loadData = function() {
+    //     const brands = [];
+    //     axios.get("http://localhost:8080/brand-demo/selectAllServlet")
+    //         .then((res = {}) => {
+    //             const { data = [] } = res;
+    //             brands.push(...data);
+    //
+    //             console.log('brands', brands)
+    //             let table = document.getElementById("brandTable");
+    //             let innerHTML = "";
+    //             brands.forEach((brand = {}, index) => {
+    //                 const statusStr = status == 0 ? "無効" : "有効";
+    //                 const idx = index + 1;
+    //                 innerHTML += (
+    //                     "<tr>" +
+    //                     "<td>"+ idx +"</td>" +
+    //                     "<td>"+brand.brandName+"</td>" +
+    //                     "<td>"+brand.companyName+"</td>" +
+    //                     "<td>"+brand.ordered+"</td>" +
+    //                     "<td>"+brand.description+"</td>" +
+    //                     "<td>"+statusStr+"</td>" +
+    //                     "<td>"+
+    //                     " <a href=\"#\" onclick=\"modifyHandler("+ brand.id +")\">修正</a> "+
+    //                     " <a href=\"#\" onclick=\"deleteHandler("+ brand.id +")\">削除</a> "+
+    //                     "</td>" +
+    //                     "</tr>"
+    //                 );
+    //             });
+    //             table.innerHTML = innerHTML;
+    //         })
+    // }
+    //
+    // window.onload = loadData;
+    //
+    // const addBtn = document.getElementById("addBtn");
+    // addBtn.onclick = () => {
+    //     window.location = "/brand-demo/addBrand.jsp"
+    // };
+    //
+    // const modifyHandler = (id) => {
+    //     window.location.href = "/brand-demo/selectByIdServlet?id=" + id;
+    // }
+    //
+    // const deleteHandler = (id) => {
+    //     axios.get("http://localhost:8080/brand-demo/deleteBrandServlet?id="+ id)
+    //         .then((res = {}) => {
+    //             const { data } = res;
+    //             if (data == "success") {
+    //                 loadData();
+    //             }
+    //         })
+    // }
+</script>
+</html>
